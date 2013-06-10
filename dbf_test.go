@@ -49,9 +49,9 @@ func TestFieldTypes(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	expected := Record{
-		"OBJECTID":   "bar",
-		"Name":       "baz",
-		"Shape_Leng": 22,
+		"OBJECTID":   "1",
+		"Name":       "Abbotsbury",
+		"Shape_Leng": 0.052467,
 	}
 	actual, err := reader.Read(0)
 	if err != nil {
