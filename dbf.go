@@ -15,6 +15,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 type Reader struct {
@@ -77,7 +78,8 @@ func (r *Reader) ModDate() (int, int, int) {
 
 func (r *Reader) FieldNames() (names []string) {
 	for _, f := range r.fields {
-		names = append(names, string(f.Name[0:11]))
+		name := strings.TrimRight(string(f.Name[:]), "\x00")
+		names = append(names, name)
 	}
 	return
 }
