@@ -24,6 +24,8 @@ type Reader struct {
 	year, month, day int
 	Length           int // number of records
 	fields           []Field
+	headerlen        uint16 // in bytes
+	recordlen        uint16 // length of each record, in bytes
 }
 
 type header struct {
@@ -69,17 +71,21 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 	}
 
 	return &Reader{r, 1900 + int(h.Year),
-		int(h.Month), int(h.Day), int(h.Nrec), fields}, nil
+		int(h.Month), int(h.Day), int(h.Nrec), fields,
+		h.Headerlen, h.Recordlen}, nil
 }
 
 func (r *Reader) ModDate() (int, int, int) {
 	return r.year, r.month, r.day
 }
 
+func (r *Reader) FieldName(i int) (name string) {
+	return strings.TrimRight(string(r.fields[i].Name[:]), "\x00")
+}
+
 func (r *Reader) FieldNames() (names []string) {
-	for _, f := range r.fields {
-		name := strings.TrimRight(string(f.Name[:]), "\x00")
-		names = append(names, name)
+	for i := range r.fields {
+		names = append(names, r.FieldName(i))
 	}
 	return
 }
@@ -88,6 +94,9 @@ func (f *Field) validate() bool {
 	return true
 }
 
+/*
+float fields seem to be stored as ascii - is that really the case?
+*/
 type Field struct {
 	Name          [11]byte // 0x0 terminated
 	Type          byte
@@ -97,15 +106,21 @@ type Field struct {
 	// Flags         uint8
 	// AutoIncrNext  uint32
 	// AutoIncrStep  uint8
-	Padding [14]byte
+	_ [14]byte
 }
 
 // http://play.golang.org/p/-CUbdWc6zz
 type Record map[string]interface{}
 
-func (r *Reader) Read(i int) (rec Record, err error) {
-	// r.r.Seek(dataStart + r.Recordlen*i)
-	return
+func (r *Reader) Read(i int) (Record, error) {
+	var offset int64
+	offset = int64(int(r.headerlen) + 1 + int(r.recordlen)*i)
+	r.r.Seek(offset, 0)
+	rec := make(Record)
+	for i := range r.fields {
+		rec[r.FieldName(i)] = "foo"
+	}
+	return rec, nil
 }
 
 func main() {

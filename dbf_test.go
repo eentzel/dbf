@@ -43,3 +43,21 @@ func TestFieldNames(t *testing.T) {
 		t.Fatalf("wrong FieldNames(): got %v, expected %v", actual, expected)
 	}
 }
+
+func TestFieldTypes(t *testing.T) {
+}
+
+func TestRead(t *testing.T) {
+	expected := Record{
+		"OBJECTID":   "bar",
+		"Name":       "baz",
+		"Shape_Leng": 22,
+	}
+	actual, err := reader.Read(0)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("Read(0) returned wrong result: got %+v, expected %+v", actual, expected)
+	}
+}
