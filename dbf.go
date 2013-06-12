@@ -118,6 +118,13 @@ func (r *Reader) Read(i int) (Record, error) {
 	r.r.Seek(offset, 0)
 	rec := make(Record)
 	for i := range r.fields {
+		switch r.fields[i].Type {
+		case 'C':
+			var buf [11]byte
+		case 'N':
+			var buf [4]byte
+		}
+		binary.Read(r.r, binary.LittleEndian, &buf) // TODO: probably need ReadInt(), ReadStr(), etc., methods
 		rec[r.FieldName(i)] = "foo"
 	}
 	return rec, nil
