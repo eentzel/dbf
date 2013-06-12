@@ -56,7 +56,7 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 	for offset = 0x20; offset < h.Headerlen-1; offset += 32 {
 		f := Field{}
 		binary.Read(r, binary.LittleEndian, &f)
-		fmt.Printf("new field: %v\n", f)
+		fmt.Printf("new field: %+v\n", f)
 		f.validate()
 		fields = append(fields, f)
 	}
@@ -113,19 +113,25 @@ type Field struct {
 type Record map[string]interface{}
 
 func (r *Reader) Read(i int) (Record, error) {
-	var offset int64
-	offset = int64(int(r.headerlen) + 1 + int(r.recordlen)*i)
+	offset := int64(int(r.headerlen) + int(r.recordlen)*i)
 	r.r.Seek(offset, 0)
+
+	var deleted byte
+	if err := binary.Read(r.r, binary.LittleEndian, &deleted); err != nil {
+		return nil, err
+	} else if deleted == '*' {
+		return nil, fmt.Errorf("record %d is deleted", i)
+	} else if deleted != ' ' {
+		return nil, fmt.Errorf("record %d contained an unexpected value in the deleted flag: %h", i, deleted)
+	}
+
 	rec := make(Record)
-	for i := range r.fields {
-		switch r.fields[i].Type {
-		case 'C':
-			var buf [11]byte
-		case 'N':
-			var buf [4]byte
+	for i, f := range r.fields {
+		buf := make([]byte, f.Len)
+		if err := binary.Read(r.r, binary.LittleEndian, &buf); err != nil {
+			return nil, err
 		}
-		binary.Read(r.r, binary.LittleEndian, &buf) // TODO: probably need ReadInt(), ReadStr(), etc., methods
-		rec[r.FieldName(i)] = "foo"
+		rec[r.FieldName(i)] = strings.TrimSpace(string(buf))
 	}
 	return rec, nil
 }
