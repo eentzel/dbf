@@ -43,9 +43,16 @@ var testFile = bytes.NewReader([]byte{
 	0x20, 0x30, 0x2E, 0x30, 0x35, 0x32, 0x34, 0x36, 0x37,
 })
 
-var reader, _ = NewReader(testFile)
+func getReader() *Reader {
+	r, err := NewReader(testFile)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
 
 func TestModDate(t *testing.T) {
+	reader := getReader()
 	y, m, d := reader.ModDate()
 	if y != 2011 || m != 7 || d != 26 {
 		t.Fatalf("wrong ModDate(): got %d-%d-%d, expected 2011-07-26\n", y, m, d) // also try t.Errorf()
@@ -53,6 +60,7 @@ func TestModDate(t *testing.T) {
 }
 
 func TestFieldNames(t *testing.T) {
+	reader := getReader()
 	actual := reader.FieldNames()
 	expected := []string{"OBJECTID", "Name", "Shape_Leng"}
 	if !reflect.DeepEqual(actual, expected) {
@@ -64,6 +72,7 @@ func TestFieldTypes(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
+	reader := getReader()
 	expected := Record{
 		"OBJECTID":   1,
 		"Name":       "Abbotsbury",

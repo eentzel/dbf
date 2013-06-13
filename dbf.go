@@ -41,6 +41,9 @@ type header struct {
 
 func NewReader(r io.ReadSeeker) (*Reader, error) {
 	var h header
+	if _, err := r.Seek(0, 0); err != nil {
+		return nil, err
+	}
 	err := binary.Read(r, binary.LittleEndian, &h)
 	if err != nil || h.Version != 0x03 {
 		fmt.Printf("unexepected file version: %d\n", h.Version)
