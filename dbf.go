@@ -58,7 +58,9 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 		f := Field{}
 		binary.Read(r, binary.LittleEndian, &f)
 		fmt.Printf("new field: %+v\n", f)
-		f.validate()
+		if err = f.validate(); err != nil {
+			return nil, err
+		}
 		fields = append(fields, f)
 	}
 
@@ -91,8 +93,13 @@ func (r *Reader) FieldNames() (names []string) {
 	return
 }
 
-func (f *Field) validate() bool {
-	return true
+func (f *Field) validate() error {
+	switch f.Type {
+	case 'C', 'N', 'F':
+		return nil
+	default:
+		return fmt.Errorf("Sorry, dbf library doesn't recognize field type '%c'", f.Type)
+	}
 }
 
 /*
