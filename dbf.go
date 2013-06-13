@@ -112,8 +112,8 @@ type Field struct {
 // http://play.golang.org/p/-CUbdWc6zz
 type Record map[string]interface{}
 
-func (r *Reader) Read(i int) (Record, error) {
-	offset := int64(int(r.headerlen) + int(r.recordlen)*i)
+func (r *Reader) Read(i uint16) (Record, error) {
+	offset := int64(r.headerlen + r.recordlen*i)
 	r.r.Seek(offset, 0)
 
 	var deleted byte
