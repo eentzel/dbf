@@ -13,7 +13,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -66,9 +65,9 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 
 	br := bufio.NewReader(r)
 	if eoh, err := br.ReadByte(); err != nil {
-		panic(err)
+		return nil, err
 	} else if eoh != 0x0D {
-		log.Fatalf("Header was supposed to be %d bytes long, but found byte %#x at that offset instead of expected byte 0x0D\n", h.Headerlen, eoh)
+		return nil, fmt.Errorf("Header was supposed to be %d bytes long, but found byte %#x at that offset instead of expected byte 0x0D\n", h.Headerlen, eoh)
 	}
 
 	return &Reader{r, 1900 + int(h.Year),
