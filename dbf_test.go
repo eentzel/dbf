@@ -65,7 +65,7 @@ func TestFieldTypes(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	expected := Record{
-		"OBJECTID":   "1",
+		"OBJECTID":   1,
 		"Name":       "Abbotsbury",
 		"Shape_Leng": 0.052467,
 	}
@@ -74,6 +74,6 @@ func TestRead(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 	if !reflect.DeepEqual(actual, expected) {
-		t.Fatalf("Read(0) returned wrong result: got %+v, expected %+v", actual, expected)
+		t.Fatalf("Read(0) returned wrong result: got %#v, expected %#v", actual, expected)
 	}
 }

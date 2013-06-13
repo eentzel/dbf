@@ -15,6 +15,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -112,12 +113,12 @@ type Field struct {
 // http://play.golang.org/p/-CUbdWc6zz
 type Record map[string]interface{}
 
-func (r *Reader) Read(i uint16) (Record, error) {
+func (r *Reader) Read(i uint16) (rec Record, err error) {
 	offset := int64(r.headerlen + r.recordlen*i)
 	r.r.Seek(offset, 0)
 
 	var deleted byte
-	if err := binary.Read(r.r, binary.LittleEndian, &deleted); err != nil {
+	if err = binary.Read(r.r, binary.LittleEndian, &deleted); err != nil {
 		return nil, err
 	} else if deleted == '*' {
 		return nil, fmt.Errorf("record %d is deleted", i)
@@ -125,13 +126,24 @@ func (r *Reader) Read(i uint16) (Record, error) {
 		return nil, fmt.Errorf("record %d contained an unexpected value in the deleted flag: %h", i, deleted)
 	}
 
-	rec := make(Record)
+	rec = make(Record)
 	for i, f := range r.fields {
 		buf := make([]byte, f.Len)
-		if err := binary.Read(r.r, binary.LittleEndian, &buf); err != nil {
+		if err = binary.Read(r.r, binary.LittleEndian, &buf); err != nil {
 			return nil, err
 		}
-		rec[r.FieldName(i)] = strings.TrimSpace(string(buf))
+		fieldVal := strings.TrimSpace(string(buf))
+		switch f.Type {
+		case 'F':
+			rec[r.FieldName(i)], err = strconv.ParseFloat(fieldVal, 64)
+		case 'N':
+			rec[r.FieldName(i)], err = strconv.Atoi(fieldVal)
+		default:
+			rec[r.FieldName(i)] = fieldVal
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 	return rec, nil
 }
