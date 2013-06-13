@@ -36,6 +36,7 @@ type header struct {
 	Nrec       uint32
 	Headerlen  uint16 // in bytes
 	Recordlen  uint16 // length of each record, in bytes
+	_          [20]byte
 }
 
 func NewReader(r io.ReadSeeker) (*Reader, error) {
@@ -49,9 +50,6 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 	fmt.Printf("Header len: %d\nRecord len: %d\n", h.Headerlen, h.Recordlen)
 
 	var fields []Field
-	_, err = r.Seek(0x20, 0)
-	// fmt.Printf("New offset: %d, error: %v\n", newOff, err)
-
 	var offset uint16
 	for offset = 0x20; offset < h.Headerlen-1; offset += 32 {
 		f := Field{}
