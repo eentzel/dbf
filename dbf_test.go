@@ -1,7 +1,5 @@
 package dbf
 
-// TODO: stress test: http://dave.cheney.net/2013/06/19/stress-test-your-go-packages
-
 import (
 	"bytes"
 	"fmt"

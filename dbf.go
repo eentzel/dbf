@@ -16,6 +16,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Reader struct {
@@ -26,6 +27,7 @@ type Reader struct {
 	fields           []Field
 	headerlen        uint16 // in bytes
 	recordlen        uint16 // length of each record, in bytes
+	sync.Mutex
 }
 
 type header struct {
@@ -75,7 +77,7 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 
 	return &Reader{r, 1900 + int(h.Year),
 		int(h.Month), int(h.Day), int(h.Nrec), fields,
-		h.Headerlen, h.Recordlen}, nil
+		h.Headerlen, h.Recordlen, *new(sync.Mutex)}, nil
 }
 
 func (r *Reader) ModDate() (int, int, int) {
@@ -121,6 +123,9 @@ type Field struct {
 type Record map[string]interface{}
 
 func (r *Reader) Read(i uint16) (rec Record, err error) {
+	r.Lock()
+	defer r.Unlock()
+
 	offset := int64(r.headerlen + r.recordlen*i)
 	r.r.Seek(offset, 0)
 
