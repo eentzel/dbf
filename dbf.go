@@ -102,9 +102,6 @@ func (f *Field) validate() error {
 	}
 }
 
-/*
-float fields seem to be stored as ascii - is that really the case?
-*/
 type Field struct {
 	Name          [11]byte // 0x0 terminated
 	Type          byte
