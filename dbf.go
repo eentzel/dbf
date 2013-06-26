@@ -13,15 +13,13 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
 )
 
 type Reader struct {
-	r io.ReadSeeker // is this the type I want?
-	// fields  []string      // probably need to keep name, type, and length around for each field
+	r                io.ReadSeeker
 	year, month, day int
 	Length           int // number of records
 	fields           []Field
@@ -158,15 +156,4 @@ func (r *Reader) Read(i uint16) (rec Record, err error) {
 		}
 	}
 	return rec, nil
-}
-
-func main() {
-	var filename = os.Args[1]
-	var infile, _ = os.Open(filename)
-	r, err := NewReader(infile)
-	fmt.Printf("reader:%v\nerr:%v\n", r, err)
-	// if err != nil {
-	// 	log.Fatalf("Unable to open %s: %s", filename, err)
-	// }
-	// rec, err := r.Read(1)
 }
