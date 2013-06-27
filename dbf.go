@@ -45,26 +45,22 @@ func NewReader(r io.ReadSeeker) (*Reader, error) {
 		return nil, err
 	}
 	err := binary.Read(r, binary.LittleEndian, &h)
-	if err != nil || h.Version != 0x03 {
-		fmt.Printf("unexepected file version: %d\n", h.Version)
+	if err != nil {
 		return nil, err
+	} else if h.Version != 0x03 {
+		return nil, fmt.Errorf("unexepected file version: %d\n", h.Version)
 	}
-
-	fmt.Printf("Header len: %d\nRecord len: %d\n", h.Headerlen, h.Recordlen)
 
 	var fields []Field
 	var offset uint16
 	for offset = 0x20; offset < h.Headerlen-1; offset += 32 {
 		f := Field{}
 		binary.Read(r, binary.LittleEndian, &f)
-		fmt.Printf("new field: %+v\n", f)
 		if err = f.validate(); err != nil {
 			return nil, err
 		}
 		fields = append(fields, f)
 	}
-
-	// fmt.Printf("header: %v\n", h)
 
 	br := bufio.NewReader(r)
 	if eoh, err := br.ReadByte(); err != nil {
