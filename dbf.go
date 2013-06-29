@@ -93,9 +93,8 @@ func (f *Field) validate() error {
 	switch f.Type {
 	case 'C', 'N', 'F':
 		return nil
-	default:
-		return fmt.Errorf("Sorry, dbf library doesn't recognize field type '%c'", f.Type)
 	}
+	return fmt.Errorf("Sorry, dbf library doesn't recognize field type '%c'", f.Type)
 }
 
 type Field struct {
