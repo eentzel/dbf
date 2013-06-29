@@ -1,5 +1,6 @@
+language: go
 go:
   - 1.0
   - 1.1
   - tip
-script: go test -race
+script: go test -v -race
