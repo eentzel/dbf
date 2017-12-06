@@ -142,9 +142,15 @@ func (r *Reader) Read(i uint16) (rec Record, err error) {
 
 		switch f.Type {
 		case 'F':
-			rec[fieldName], err = strconv.ParseFloat(fieldVal, 64)
+			if len(fieldVal) == 0 {
+				rec[fieldName] = float64(0)
+			} else {
+				rec[fieldName], err = strconv.ParseFloat(fieldVal, 64)
+			}
 		case 'N':
-			if f.DecimalPlaces > 0 {
+			if len(fieldVal) == 0 {
+				rec[fieldName] = int(0)
+			} else if f.DecimalPlaces > 0 {
 				rec[fieldName], err = strconv.ParseFloat(fieldVal, 64)
 			} else {
 				rec[fieldName], err = strconv.Atoi(fieldVal)
