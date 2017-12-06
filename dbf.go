@@ -136,14 +136,27 @@ func (r *Reader) Read(i uint16) (rec Record, err error) {
 		if err = binary.Read(r.r, binary.LittleEndian, &buf); err != nil {
 			return nil, err
 		}
+
 		fieldVal := strings.TrimSpace(string(buf))
+		fieldName := r.FieldName(i)
+
 		switch f.Type {
 		case 'F':
-			rec[r.FieldName(i)], err = strconv.ParseFloat(fieldVal, 64)
+			if len(fieldVal) == 0 {
+				rec[fieldName] = float64(0)
+			} else {
+				rec[fieldName], err = strconv.ParseFloat(fieldVal, 64)
+			}
 		case 'N':
-			rec[r.FieldName(i)], err = strconv.Atoi(fieldVal)
+			if len(fieldVal) == 0 {
+				rec[fieldName] = int(0)
+			} else if f.DecimalPlaces > 0 {
+				rec[fieldName], err = strconv.ParseFloat(fieldVal, 64)
+			} else {
+				rec[fieldName], err = strconv.Atoi(fieldVal)
+			}
 		default:
-			rec[r.FieldName(i)] = fieldVal
+			rec[fieldName] = fieldVal
 		}
 		if err != nil {
 			return nil, err
