@@ -80,10 +80,18 @@ func (r *Reader) ModDate() (int, int, int) {
 	return r.year, r.month, r.day
 }
 
+//FieldName - returns field name, read up to the first "\x00" rune, to accomodate some malformed dbf
 func (r *Reader) FieldName(i int) (name string) {
-	return strings.TrimRight(string(r.fields[i].Name[:]), "\x00")
+	for _, val := range string(r.fields[i].Name[:]) {
+	if val == 0 {
+		return
+	}
+	name = name + string(val)
+	}
+	return
 }
 
+//FieldNames - return the full list of Field Names
 func (r *Reader) FieldNames() (names []string) {
 	for i := range r.fields {
 		names = append(names, r.FieldName(i))
@@ -114,11 +122,12 @@ type Field struct {
 // http://play.golang.org/p/-CUbdWc6zz
 type Record map[string]interface{}
 
-func (r *Reader) Read(i uint16) (rec Record, err error) {
+//Read - read record i
+func (r *Reader) Read(i int) (rec Record, err error) {
 	r.Lock()
 	defer r.Unlock()
 
-	offset := int64(r.headerlen + r.recordlen*i)
+	offset := int64(r.headerlen) + int64(r.recordlen)*int64(i)
 	r.r.Seek(offset, 0)
 
 	var deleted byte
